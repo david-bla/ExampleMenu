@@ -21,9 +21,10 @@ public class Menu implements InventoryHolder {
 
     private static final String configFileName = "menu.yml";
 
-    private File configFile;
+    private static File configFile;
+    private static FileConfiguration config;
+
     private Integer menuId;
-    private FileConfiguration config;
     private ConfigurationSection menuCfg;
 
     private Inventory inv;
@@ -34,9 +35,8 @@ public class Menu implements InventoryHolder {
 
     public Menu(Integer menuId){
         menuPoints = new HashMap<>();
-        this.config = config();
         this.menuId = menuId;
-        menuCfg = this.config.getConfigurationSection("menu." + menuId);
+        menuCfg = config.getConfigurationSection("menu." + menuId);
         if(menuCfg == null){
             Bukkit.getServer().getConsoleSender().sendMessage("Error menuCfg null!");
         }
@@ -58,15 +58,25 @@ public class Menu implements InventoryHolder {
         return inv;
     }
 
+    public static List<Integer> getMenuIds(){
+        config = config();
+
+        List<Integer> menuIds = new ArrayList<>();
+        for ( String menuId : config.getConfigurationSection("menu").getKeys(false)){
+            menuIds.add(Integer.parseInt(menuId));
+        }
+        return menuIds;
+    }
+
     @Override
     public Inventory getInventory() {
         return inv;
     }
 
-    private FileConfiguration config() {
-        this.configFile = new File(ExampleMenu.getInstance().getDataFolder(), configFileName);
-        if (!this.configFile.exists()) {
-            this.configFile.getParentFile().mkdirs();
+    private static FileConfiguration config() {
+        configFile = new File(ExampleMenu.getInstance().getDataFolder(), configFileName);
+        if (!configFile.exists()) {
+            configFile.getParentFile().mkdirs();
             ExampleMenu.getInstance().saveResource(configFileName, false);
         }
         config = new YamlConfiguration();

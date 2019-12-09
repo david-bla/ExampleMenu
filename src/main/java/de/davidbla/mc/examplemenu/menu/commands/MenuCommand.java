@@ -1,5 +1,6 @@
 package de.davidbla.mc.examplemenu.menu.commands;
 
+import de.davidbla.mc.examplemenu.ExampleMenu;
 import de.davidbla.mc.examplemenu.menu.Menu;
 import de.davidbla.mc.examplemenu.menu.MenuAction;
 import de.davidbla.mc.examplemenu.menu.MenuPoint;
@@ -16,8 +17,7 @@ public class MenuCommand implements CommandExecutor {
         if(sender instanceof Player){
             Player player = (Player) sender;
             if(args.length == 0) {
-                Menu menu = new Menu(0);
-                menu.open((Player) sender);
+                ExampleMenu.menu.get(0).open((Player) sender);
                 return true;
             }else{
                 if(args[0].equalsIgnoreCase("set")){

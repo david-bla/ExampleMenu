@@ -23,6 +23,16 @@ public final class ExampleMenu extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new OnMenuClick(),this);
 
         instance.getCommand("menu").setExecutor(new MenuCommand());
+
+        loadMenus();
+    }
+
+    private void loadMenus(){
+        menu = new HashMap<>();
+        List<Integer> menuIds = Menu.getMenuIds();
+        for(Integer menuId : menuIds){
+            menu.put(menuId,new Menu(menuId));
+        }
     }
 
     @Override
