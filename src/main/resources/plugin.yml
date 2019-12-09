@@ -1,0 +1,10 @@
+name: ExampleMenu
+version: ${project.version}
+main: de.davidbla.mc.examplemenu.ExampleMenu
+api-version: 1.13
+authors: [DavidBla]
+description: Example Plugin for Basic Menu
+website: davidbla.de/mc
+commands:
+  menu:
+    description: menu command

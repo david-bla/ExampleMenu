@@ -1,0 +1,88 @@
+menu:
+  '0':
+    name: §6 ~ ExampleMenu ~
+    size: 18
+    permission: menu.0
+    menupoints:
+      '0':
+        title: Teleport
+        subtitles:
+          - Erste Zeile
+          - Zweite Zeile
+          - Dritte Zeile
+        viewPermission: menu.0.0
+        usePermission: menu.0.0
+        action: Teleport
+        material: GOLD_BLOCK
+        actionData:
+          Teleport:
+            ==: org.bukkit.Location
+            world: world
+            x: -246.5597568727395
+            y: 65.0
+            z: 218.07785684792609
+            pitch: 29.100025
+            yaw: -233.1001
+      '2':
+        title: Item
+        subtitles:
+          - Erste Zeile
+          - Zweite Zeile
+          - Dritte Zeile
+        viewPermission: menu.0.1
+        usePermission: menu.0.1
+        action: Item
+        material: DIAMOND_BLOCK
+        actionData:
+          Item:
+            ==: org.bukkit.inventory.ItemStack
+            v: 1976
+            type: DANDELION
+      '4':
+        title: PlayerCommand
+        subtitles:
+          - Erste Zeile
+          - Zweite Zeile
+          - Dritte Zeile
+        viewPermission: menu.0.2
+        usePermission: menu.0.2
+        action: PlayerCommand
+        material: REPEATING_COMMAND_BLOCK
+        actionData:
+          PlayerCommand: gamemode creative
+      '5':
+        title: ConsoleCommand
+        subtitles:
+          - Erste Zeile
+          - Zweite Zeile
+          - Dritte Zeile
+        viewPermission: menu.0.3
+        usePermission: menu.0.3
+        action: ConsoleCommand
+        material: COMMAND_BLOCK
+        actionData:
+          ConsoleCommand: op %p
+      '7':
+        title: PlayerMsg
+        subtitles:
+          - Erste Zeile
+          - Zweite Zeile
+          - Dritte Zeile
+        viewPermission: menu.0.4
+        usePermission: menu.0.4
+        action: SendPlayerMessage
+        material: TORCH
+        actionData:
+          SendPlayerMessage: SendPlayerMessage
+      '8':
+        title: GlobalMsg
+        subtitles:
+          - Erste Zeile
+          - Zweite Zeile
+          - Dritte Zeile
+        viewPermission: menu.0.5
+        usePermission: menu.0.5
+        action: BroadcastMessage
+        material: BEACON
+        actionData:
+          BroadcastMessage: BroadcastMessage
