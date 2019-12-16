@@ -1,4 +1,5 @@
-#Example Menu
+# Example Menu
+
 Dieses Spigot Plugin zeigt beispielhaft wie ein Menü umgesetzt werden kann.
 
 Ich möchte direkt vorweg nehmen, dass vieles verbessert werden kann! __Bitte erstellt Issues oder Merge requests und weist auf Fehler und Verbesserungsvorschläge hin.__
