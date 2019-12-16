@@ -1,6 +1,7 @@
 package de.davidbla.mc.examplemenu.menu;
 
 import de.davidbla.mc.examplemenu.ExampleMenu;
+import de.davidbla.mc.examplemenu.utils.ChatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -14,11 +15,9 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Executable;
 import java.util.*;
 
 public class Menu implements InventoryHolder {
-
     private static final String configFileName = "menu.yml";
 
     private static File configFile;
@@ -30,39 +29,67 @@ public class Menu implements InventoryHolder {
     private Inventory inv;
     private Integer size;
     private String title;
-    private String permission;
+    private String viewPermission;
+    private String editPermission;
     private HashMap<Integer, MenuPoint> menuPoints;
 
     public Menu(Integer menuId){
         menuPoints = new HashMap<>();
         this.menuId = menuId;
-        menuCfg = config.getConfigurationSection("menu." + menuId);
-        if(menuCfg == null){
-            Bukkit.getServer().getConsoleSender().sendMessage("Error menuCfg null!");
-        }
+        menuCfg = config().getConfigurationSection("menu." + menuId);
         this.size = menuCfg.getInt("size");
         this.title = menuCfg.getString("title");
-        this.permission = menuCfg.getString("permission");
+        this.viewPermission = menuCfg.getString("viewPermission");
+        this.editPermission = menuCfg.getString("editPermission");
         inv = load(menuCfg);
     }
 
-    private Inventory load(ConfigurationSection menuCfg){
-        Inventory inv = Bukkit.createInventory(this, 9, "§6~ Menu ~");
-        for( String menuPointNr : menuCfg.getConfigurationSection("menupoints").getKeys(false)){
+    public Menu(){
+        List<Integer> menuIds = getMenuIds();
+        Integer newMenuId = 1;
+        while(menuIds.contains(newMenuId)){
+            newMenuId++;
+        }
+        this.menuId = newMenuId;
+        config().createSection("menu." + this.menuId, new HashMap<>());
+        ConfigurationSection menuCfg = config().getConfigurationSection("menu." + this.menuId);
 
-            ConfigurationSection menuPointCfg = menuCfg.getConfigurationSection("menupoints." + menuPointNr);
-            MenuPoint menuPoint = new MenuPoint(menuPointCfg);
-            menuPoints.put(Integer.parseInt(menuPointNr),menuPoint);
-            inv.setItem(Integer.parseInt(menuPointNr),menuPoint.getItem());
+        this.title = "New Menu";
+        this.size = 9;
+        this.viewPermission = "menu." + this.menuId;
+        this.editPermission = "menu.edit." + this.menuId;
+
+        menuCfg.set("title",this.title);
+        menuCfg.set("size",this.size);
+        menuCfg.set("viewPermission",this.viewPermission);
+        menuCfg.set("editPermission",this.editPermission);
+        // Leere "menupoint" Punkt in die Config eintragen.
+        menuCfg.createSection("menupoints",new HashMap<>());
+
+        save(this.menuId,menuCfg);
+        menuCfg = menuCfg.getConfigurationSection(this.menuId.toString()); //config.getConfigurationSection("menu." + this.menuId);
+        inv = load(menuCfg);
+    }
+
+    private Inventory load(ConfigurationSection menuCfg) {
+        Inventory inv = Bukkit.createInventory(this, this.size, this.title);
+        if (menuCfg != null){
+            if (menuCfg.getConfigurationSection("menupoints") != null) {
+                for (String menuPointNr : menuCfg.getConfigurationSection("menupoints").getKeys(false)) {
+                    if(this.size <= Integer.parseInt(menuPointNr)) break;
+                    ConfigurationSection menuPointCfg = menuCfg.getConfigurationSection("menupoints." + menuPointNr);
+                    MenuPoint menuPoint = new MenuPoint(menuPointCfg);
+                    menuPoints.put(Integer.parseInt(menuPointNr), menuPoint);
+                    inv.setItem(Integer.parseInt(menuPointNr), menuPoint.getItem());
+                }
+            }
         }
         return inv;
     }
 
     public static List<Integer> getMenuIds(){
-        config = config();
-
         List<Integer> menuIds = new ArrayList<>();
-        for ( String menuId : config.getConfigurationSection("menu").getKeys(false)){
+        for ( String menuId : config().getConfigurationSection("menu").getKeys(false)){
             menuIds.add(Integer.parseInt(menuId));
         }
         return menuIds;
@@ -73,7 +100,8 @@ public class Menu implements InventoryHolder {
         return inv;
     }
 
-    private static FileConfiguration config() {
+    public static FileConfiguration config() {
+        if(config != null) return config;
         configFile = new File(ExampleMenu.getInstance().getDataFolder(), configFileName);
         if (!configFile.exists()) {
             configFile.getParentFile().mkdirs();
@@ -89,20 +117,39 @@ public class Menu implements InventoryHolder {
     }
 
     public void setTitle(String title) {
-        this.title = title;
+        this.title = ChatUtil.colorize(title);
         update();
     }
     public void setSize(Integer size){
         this.size = size;
         update();
     }
-    public void setPermission(String permission){
-        this.permission = permission;
+    public String getViewPermission(){
+        return this.viewPermission;
+    }
+    public void setViewPermission(String viewPermission){
+        this.viewPermission = viewPermission;
         update();
+    }
+    public String getEditPermission(){
+        if(this.editPermission == null) return "";
+        return this.editPermission;
+    }
+    public void setEditPermission(String editPermission){
+        this.editPermission = editPermission;
+        update();
+    }
+
+    public Integer getId(){
+        return this.menuId;
     }
 
     // Öffnet das Inventar
     public void open(Player p) {
+        if(!p.hasPermission(this.viewPermission)){
+            ChatUtil.noPermissionMsg(p,this.viewPermission);
+            return;
+        }
         p.openInventory(inv);
     }
 
@@ -117,15 +164,29 @@ public class Menu implements InventoryHolder {
         return true;
     }
 
+    public boolean addMenuPoint(MenuPoint menuPoint, Integer slotNr){
+        if(isSlotFree(slotNr)){
+            this.menuPoints.put(slotNr,menuPoint);
+            update();
+            return true;
+        }
+        return false;
+    }
+
     public boolean changePosition(Integer oldSlot, Integer newSlot){
         if(!isSlotFree(oldSlot) && isSlotFree(newSlot)){
             MenuPoint menuPoint = getMenuPoint(oldSlot);
-            this.menuPoints.remove(oldSlot);
-            this.menuPoints.put(newSlot,menuPoint);
-            ItemStack item = inv.getItem(oldSlot);
-            inv.clear(oldSlot);
-            inv.setItem(newSlot,item);
+            Menu.delete(menuId,oldSlot);
+            addMenuPoint(menuPoint,newSlot);
             update();
+            return true;
+        }else if(!isSlotFree(oldSlot) && !isSlotFree(newSlot)){
+            MenuPoint tempMenuPoint = getMenuPoint(newSlot);
+            MenuPoint menuPoint = getMenuPoint(oldSlot);
+            Menu.delete(menuId,newSlot);
+            Menu.delete(menuId,oldSlot);
+            addMenuPoint(menuPoint,newSlot);
+            addMenuPoint(tempMenuPoint,oldSlot);
             return true;
         }
         return false;
@@ -140,24 +201,55 @@ public class Menu implements InventoryHolder {
     public void update(){
         menuCfg.set("title",this.title);
         menuCfg.set("size",this.size);
-        menuCfg.set("permission",this.permission);
+        menuCfg.set("viewPermission",this.viewPermission);
+        menuCfg.set("editPermission",this.editPermission);
         updateMenuPoints();
 
         inv = load(menuCfg);
-        save();
+        save(this.menuId,menuCfg);
     }
-    private void save() {
-        config.set("menu." + menuId,menuCfg);
+
+    public static boolean delete(Integer menuId){
+        if( ExampleMenu.menu.containsKey(menuId) ){
+            config().set("menu."+menuId,null);
+            ExampleMenu.getInstance().loadMenus();
+            save();
+            return true;
+        }
+        return false;
+    }
+
+
+    public static boolean delete(Integer menuId, Integer slotId){
+        if( ExampleMenu.menu.containsKey(menuId) ) {
+            if (ExampleMenu.menu.get(menuId).isSlotFree(slotId)) return false;
+            config().set("menu." + menuId + ".menupoints." + slotId, null);
+            ExampleMenu.getInstance().loadMenus();
+            save();
+            return true;
+        }
+        return false;
+    }
+    private static void save(){
         try {
-            config.save(configFile);
+            config().save(configFile);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        ExampleMenu.getInstance().loadMenus();
     }
 
+    private static void save(Integer menuId, ConfigurationSection menuCfg) {
+        config().set("menu." + menuId,menuCfg);
+        save();
+    }
     /*
     *   Menupunkte aktualisieren
      */
+    public void updateMenuPoint(MenuPoint menuPoint, MenuAction menuAction){
+        menuPoint.setAction(menuAction);
+        update();
+    }
     public void updateMenuPoint(MenuPoint menuPoint, MenuAction menuAction, ItemStack item){
         menuPoint.setAction(menuAction);
         menuPoint.setActionData(menuAction,item);
@@ -174,11 +266,10 @@ public class Menu implements InventoryHolder {
         update();
     }
 
+
     public void updateMenuPoints(){
         for(Integer menuPointNr : menuPoints.keySet()){
             menuCfg.set("menupoints." + menuPointNr,menuPoints.get(menuPointNr).getConfigurationSection());
         }
     }
-
-
 }

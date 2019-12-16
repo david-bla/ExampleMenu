@@ -1,109 +1,111 @@
 package de.davidbla.mc.examplemenu.menu.commands;
 
 import de.davidbla.mc.examplemenu.ExampleMenu;
-import de.davidbla.mc.examplemenu.menu.Menu;
-import de.davidbla.mc.examplemenu.menu.MenuAction;
-import de.davidbla.mc.examplemenu.menu.MenuPoint;
+import de.davidbla.mc.examplemenu.utils.ChatUtil;
 import de.davidbla.mc.examplemenu.utils.ValidatorUtil;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MenuCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(sender instanceof Player){
             Player player = (Player) sender;
+
             if(args.length == 0) {
-                ExampleMenu.menu.get(0).open((Player) sender);
-                return true;
-            }else{
-                if(args[0].equalsIgnoreCase("set")){
-                    if(ValidatorUtil.isInteger(args[1])){
-                        Menu menu = new Menu(Integer.valueOf(args[1]));
-                        if( menu != null){
+                if(ExampleMenu.menu.containsKey(0)) {
+                    ExampleMenu.menu.get(0).open(player);
+                    return true;
+                }
+                ChatUtil.errorMsg(player);
+            }
 
-                            switch(args[2]){
-                                case "title":
-                                    menu.setTitle(args[3]);
-                                    return true;
-                                case "size":
-                                    if(ValidatorUtil.isInteger(args[3])) {
-                                        int size = Integer.parseInt(args[3]);
-                                        if(size % 9 != 0) return false;
-                                        menu.setSize(size);
-                                        return true;
-                                    }
-                                    break;
-                                case "permission":
-                                    menu.setPermission(args[3]);
-                                    return true;
-                                case "point":
-                                    if(ValidatorUtil.isInteger(args[3])) {
-                                        Integer slotNr = Integer.valueOf(args[3]);
-                                        MenuPoint menuPoint = menu.getMenuPoint(slotNr);
-                                        if(menuPoint == null) return false;
+            if( ValidatorUtil.isInteger( args[0] ) ){
+                Integer menuId = Integer.parseInt( args[0] );
 
-                                        switch(args[4]){
-                                            case "title":
-                                                menuPoint.setTitle(args[5]);
-                                                break;
-                                            case "subtitle":
-                                                //menuPoint.setSubtitles();
-                                                break;
-                                            case "viewPermission":
-                                                menuPoint.setViewPermission(args[5]);
-                                                break;
-                                            case "usePermission":
-                                                menuPoint.setUsePermission(args[5]);
-                                                break;
-                                            case "action":
-                                                MenuAction action = MenuAction.get(args[5]);
-                                                if(action != null){
-                                                    menuPoint.setAction(action);
-                                                    switch(action){
-                                                        case Teleport:
-                                                            menu.updateMenuPoint(menuPoint,action,player.getLocation());
-                                                            return true;
-                                                        case Item:
-                                                            menu.updateMenuPoint(menuPoint,action,player.getInventory().getItemInMainHand());
-                                                            return true;
-                                                        case SendPlayerMessage:
-                                                        case BroadcastMessage:
-                                                        case PlayerCommand:
-                                                        case ConsoleCommand:
-                                                            menu.updateMenuPoint(menuPoint,action,args[6]);
-                                                            return true;
-                                                    }
-                                                    return false;
-                                                }
-                                                break;
-                                            case "material":
-                                                Material material = Material.getMaterial(args[5]);
-                                                if( material != null ){
-                                                    menuPoint.setMaterial(material);
-                                                    return true;
-                                                }
-                                                break;
-                                            case "slot":
-                                                if(ValidatorUtil.isInteger(args[5]) && ValidatorUtil.isInteger(args[6])){
-                                                    return menu.changePosition(Integer.parseInt(args[5]),Integer.parseInt(args[6]));
-                                                }
+                if(args.length == 1) {
+                    if (ExampleMenu.menu.containsKey(menuId)) {
+                        ExampleMenu.menu.get(menuId).open(player);
+                    } else {
+                        ChatUtil.errorMsg(player);
+                    }
+                    return true;
+                }else{
+                    if(!player.hasPermission(ExampleMenu.menu.get(menuId).getEditPermission())){
+                        ChatUtil.noPermissionMsg(player);
+                        return true;
+                    }
+                    switch(args[1].toLowerCase()){
+                        case "set":
+                            SetCommand.run(player, args);
+                            return true;
 
-                                                break;
-                                        }
+                        case "add":
+                            AddCommand.run(player,args);
+                            return true;
 
-                                    }
-                                    break;
-                            }
-
-                        }
+                        case "del":
+                            DelCommand.run(player,args);
+                            return true;
                     }
                 }
             }
+            if( args[0].equalsIgnoreCase("help" )) {
+                if(args.length > 1){
+                    help(player,args[1]);
+                }else{
+                    help(player);
+                }
+                return true;
+            }
+
+            if( args[0].equalsIgnoreCase("new" )){
+                if(!player.hasPermission("menu.new")){
+                    ChatUtil.noPermissionMsg(player);
+                    return true;
+                }
+                NewCommand.run(player,args);
+                return true;
+            }
+
+            ChatUtil.errorMsg(player);
+            return true;
         }
         return false;
+    }
+    public void help(Player player){
+        List<String> help = new ArrayList<>();
+        help.add("&6[ &9ExampleMenu &6] &r Hilfe");
+        help.add("&b/menu help [new|set|add|del]' für Details.");
+        help.add("&1'/menu <menuId>' &7zum Öffnen eines Menüs");
+        help.add("&1'/menu new' &7zum Erstellen eines neuen Menüs");
+        help.add("&1'/menu <menuId> set <title|size|viewPermission|editPermission> <value>' &7ändert Menüeinstellungen.");
+        help.add("&1'/menu <menuId> set point <slotId> <title|subtitle|material|viewPermission|usePermission|action|material|slot> <value>' &7ändert Menüpunkteinstellungen.");
+        help.add("&1'/menu <menuId> add <slotId>' &7erstellt einen neuen Menüpunkt.");
+        help.add("&1'/menu <menuId> del [<slotId>]' &7löscht ein Menü oder einen Menüpunkt.");
+        ChatUtil.playerMsg(player,help);
+    }
+    public void help(Player player, String command){
+        switch(command){
+            case "set":
+                ChatUtil.playerMsg(player,"kommt noch...");
+                break;
+            case "new":
+                ChatUtil.playerMsg(player,"kommt noch...");
+                break;
+            case "add":
+                ChatUtil.playerMsg(player,"kommt noch...");
+                break;
+            case "del":
+                ChatUtil.playerMsg(player,"kommt noch...");
+                break;
+            default:
+                help(player);
+        }
     }
 }

@@ -1,12 +1,15 @@
 package de.davidbla.mc.examplemenu.menu;
 
+import de.davidbla.mc.examplemenu.ExampleMenu;
+import de.davidbla.mc.examplemenu.utils.ChatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public enum MenuAction {
-    Teleport, Item, PlayerCommand, ConsoleCommand, SendPlayerMessage, BroadcastMessage;
+    Log, Teleport, Item, PlayerCommand, ConsoleCommand, SendPlayerMessage, BroadcastMessage;
+
 
     public static MenuAction get(String string){
         for( MenuAction menuAction : MenuAction.values() ){
@@ -21,6 +24,10 @@ public enum MenuAction {
                            MenuAction action,
                            ConfigurationSection actionData){
         switch(action) {
+            case Log:
+                ExampleMenu.getInstance().getLogger().info("MenuAction 'log' ausgelöst.");
+                break;
+
             case Teleport:
                 player.teleport(actionData.getLocation(action.toString()));
                 break;
@@ -31,11 +38,11 @@ public enum MenuAction {
                 break;
 
             case SendPlayerMessage:
-                player.sendMessage(actionData.getString(action.toString()));
+                player.sendMessage(ChatUtil.colorize(actionData.getString(action.toString())));
                 break;
 
             case BroadcastMessage:
-                Bukkit.broadcastMessage(actionData.getString(action.toString()));
+                Bukkit.broadcastMessage(ChatUtil.colorize(actionData.getString(action.toString())));
                 break;
 
             case PlayerCommand:
@@ -47,8 +54,7 @@ public enum MenuAction {
                 break;
 
             default:
-                System.out.println("Test");
-                // Error
+                ChatUtil.errorMsg(player);
         }
     }
 }

@@ -1,17 +1,18 @@
 menu:
   '0':
-    name: §6 ~ ExampleMenu ~
+    title: §6 ~ ExampleMenu ~
     size: 18
-    permission: menu.0
+    viewPermission: menu.0
+    editPermission: menu.edit.0
     menupoints:
       '0':
         title: Teleport
         subtitles:
-          - Erste Zeile
-          - Zweite Zeile
-          - Dritte Zeile
-        viewPermission: menu.0.0
-        usePermission: menu.0.0
+          - Dies ist ein Teleport
+          - Button, er Teleportiert dich
+          - zu einer hinterlegten Position
+
+        permission: menu.0.0
         action: Teleport
         material: GOLD_BLOCK
         actionData:
@@ -26,11 +27,10 @@ menu:
       '2':
         title: Item
         subtitles:
-          - Erste Zeile
-          - Zweite Zeile
-          - Dritte Zeile
-        viewPermission: menu.0.1
-        usePermission: menu.0.1
+          - Dieser Button gibt dir
+          - ein tolles Item
+
+        permission: menu.0.2
         action: Item
         material: DIAMOND_BLOCK
         actionData:
@@ -41,11 +41,10 @@ menu:
       '4':
         title: PlayerCommand
         subtitles:
-          - Erste Zeile
-          - Zweite Zeile
-          - Dritte Zeile
-        viewPermission: menu.0.2
-        usePermission: menu.0.2
+          - Beim Klick wird ein Command
+          - vom Player aus ausgeführt.
+
+        permission: menu.0.4
         action: PlayerCommand
         material: REPEATING_COMMAND_BLOCK
         actionData:
@@ -53,11 +52,10 @@ menu:
       '5':
         title: ConsoleCommand
         subtitles:
-          - Erste Zeile
-          - Zweite Zeile
-          - Dritte Zeile
-        viewPermission: menu.0.3
-        usePermission: menu.0.3
+          - Hier wird ein Command von
+          - der Konsole aus ausgeführt
+
+        permission: menu.0.5
         action: ConsoleCommand
         material: COMMAND_BLOCK
         actionData:
@@ -65,11 +63,10 @@ menu:
       '7':
         title: PlayerMsg
         subtitles:
-          - Erste Zeile
-          - Zweite Zeile
-          - Dritte Zeile
-        viewPermission: menu.0.4
-        usePermission: menu.0.4
+          - Schickt eine Nachricht an den
+          - Spieler der klickt.
+
+        permission: menu.0.7
         action: SendPlayerMessage
         material: TORCH
         actionData:
@@ -77,11 +74,11 @@ menu:
       '8':
         title: GlobalMsg
         subtitles:
-          - Erste Zeile
-          - Zweite Zeile
-          - Dritte Zeile
-        viewPermission: menu.0.5
-        usePermission: menu.0.5
+          - Broadcastet eine Nachricht
+          - an alle Spieler die auf dem
+          - Server online sind
+
+        permission: menu.0.8
         action: BroadcastMessage
         material: BEACON
         actionData:
